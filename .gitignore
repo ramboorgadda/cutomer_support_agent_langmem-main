@@ -9,3 +9,6 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+# Notebook-generated local vector store data
+notebooks/data/
