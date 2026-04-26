@@ -61,8 +61,21 @@ class KnowledgeBaseService:
     def add_knowledge(self, content: str, metadata: dict[str, Any]) -> None:
         chunks = self._splitter.split_text(content)
         ids = [hashlib.sha256((chunk + str(metadata)).encode()).hexdigest() for chunk in chunks]
-        self.collection.add(
+        self._collection.add(
             documents=chunks,
             metadatas=[metadata] * len(chunks),
             ids=ids
         )
+        
+    def search(self,query: str, top_k: int | None = None) -> list[dict[str, Any]]:
+        if top_k is None:
+            top_k = self._settings.rag_top_k
+        results = self._collection.query(query_texts=[query], n_results=top_k)
+        return [
+            {
+                "document": doc,
+                "metadata": metadata,
+                "id": id
+            }
+            for doc, metadata, id in zip(results["documents"][0], results["metadatas"][0], results["ids"][0])
+        ]
